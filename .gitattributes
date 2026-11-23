@@ -1,0 +1,28 @@
+# 📊 将 Markdown 视为可统计的非文档文件，纳入 GitHub 语言统计。
+*.md linguist-detectable=true linguist-documentation=false
+
+# 📊 将 JSON 数据（配音 meta、字幕索引）纳入语言统计。
+*.json linguist-detectable=true linguist-language=JSON
+
+# 📊 口播字幕脚本同样计入统计。
+*.ass linguist-detectable=true
+
+# 📝 文本源文件统一换行符。
+* text=auto
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.txt text eol=lf
+
+# 🎬 字幕文件保留 Windows CRLF，供 ffmpeg 烧录时直接使用。
+*.ass text eol=crlf
+
+# 📦 二进制成品原样存储。
+*.mp4 binary
+*.mp3 binary
+*.wav binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ttf binary
