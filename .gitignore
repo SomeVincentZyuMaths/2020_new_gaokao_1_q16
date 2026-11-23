@@ -1,0 +1,8 @@
+# Manim 渲染中间产物，可由 scene*.py 重新生成
+media/
+
+# 第三方开源字体（霞鹜文楷 LXGW WenKai），体积大且不入库
+fonts/
+
+__pycache__/
+*.pyc

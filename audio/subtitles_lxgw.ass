@@ -1,0 +1,43 @@
+[Script Info]
+Title: Scene5 Subtitles
+ScriptType: v4.00+
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.601
+PlayResX: 1920
+PlayResY: 1080
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,LXGW WenKai,44,&H00FFFFFF,&H000000FF,&H00141414,&H80000000,-1,0,0,0,100,100,0,0,1,2.5,1.5,2,40,40,42,1
+Style: Highlight,LXGW WenKai,46,&H0000D7FF,&H000000FF,&H000A0A0A,&H80000000,-1,0,0,0,100,100,0,0,1,3.0,1.8,2,40,40,42,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:03.86,Default,,0,0,0,,这是 2020 新高考全国 I 卷第 16 题。
+Dialogue: 0,0:00:03.86,0:00:10.34,Default,,0,0,0,,如图所示，直四棱柱所有的棱长都是 2，\N底面菱形当中，一个角是 60°。
+Dialogue: 0,0:00:10.34,0:00:15.14,Default,,0,0,0,,也就是说，底面是两个等边三角形拼起来的对称图形。
+Dialogue: 0,0:00:15.14,0:00:19.13,Default,,0,0,0,,现在有一个以 D₁ 为球心、√5 为半径的球。
+Dialogue: 0,0:00:19.13,0:00:24.67,Default,,0,0,0,,题目问你：这个球与侧面 BCC₁B₁ 的交线弧长是多少？
+Dialogue: 0,0:00:24.67,0:00:33.82,Default,,0,0,0,,题目问的是正方形侧面内部截出的弧长，\N而不是整个截面大圆的周长，一定要先审清！
+Dialogue: 0,0:00:33.82,0:00:36.48,Default,,0,0,0,,好，我们先专注来看顶面。
+Dialogue: 0,0:00:36.48,0:00:41.50,Default,,0,0,0,,正如我刚刚所说，连接 B₁D₁ 可以得到两个等边三角形。
+Dialogue: 0,0:00:41.50,0:00:49.73,Default,,0,0,0,,球心 D₁ 到侧面 BCC₁B₁ 的垂面距离，\N正是等边三角形 B₁C₁D₁ 的高！
+Dialogue: 0,0:00:49.73,0:00:54.38,Default,,0,0,0,,垂足我们标记为 O'，也就是后续截面圆的圆心。
+Dialogue: 0,0:00:54.38,0:00:58.82,Default,,0,0,0,,要严格证明 D₁O' 垂直于侧面也很简单：
+Dialogue: 0,0:00:58.82,0:01:04.94,Default,,0,0,0,,首先，在等边三角形中，高线 D₁O' 垂直于底边 B₁C₁；
+Dialogue: 0,0:01:04.94,0:01:14.95,Default,,0,0,0,,其次，因为直四棱柱竖直棱 BB₁ 垂直顶面，\N所以 BB₁ 自然垂直于顶面内的直线 D₁O'。
+Dialogue: 0,0:01:14.95,0:01:29.47,Highlight,,0,0,0,,D₁O' 垂直于 B₁C₁ 且垂直于 BB₁，\N两条相交线在侧面上，故 D₁O' 垂直于整个侧面！
+Dialogue: 0,0:01:29.47,0:01:36.02,Default,,0,0,0,,因此，线段 D₁O' 的长度，正是球心 D₁ 距离侧面的垂面距离 d。
+Dialogue: 0,0:01:36.02,0:01:45.00,Highlight,,0,0,0,,等边三角形边长为 2，半边 C₁O' 为 1，\N勾股定理立刻算出高 d = √3！
+Dialogue: 0,0:01:45.00,0:01:50.81,Default,,0,0,0,,接下来我们把视角切到侧面，\N让以 D₁ 为球心的大球穿透侧面。
+Dialogue: 0,0:01:50.81,0:02:03.94,Highlight,,0,0,0,,沿 B₁C₁ 平视侧面压成垂线！\N水平垂距 d = √3，斜边球半径 R = √5！
+Dialogue: 0,0:02:03.94,0:02:19.27,Highlight,,0,0,0,,标准直角三角形勾股秒杀：\N截面圆半径 r = √(R² - d²) = √(5 - 3) = √2！
+Dialogue: 0,0:02:19.27,0:02:24.46,Default,,0,0,0,,好，最后我们彻底降维，正视这个边长为 2 的正方形侧面。
+Dialogue: 0,0:02:24.46,0:02:32.62,Default,,0,0,0,,O' 为中点，两边截出的都是边长为 1 的等腰直角三角形，\N左右各切掉了 45° 切角！
+Dialogue: 0,0:02:32.62,0:02:44.23,Highlight,,0,0,0,,图形左右严格对称，中间弧所对圆心角，\N正好是 180° - 45° - 45° = 90°，对应 π/2！
+Dialogue: 0,0:02:44.23,0:02:54.00,Highlight,,0,0,0,,弧长公式：l = θ · r = (π/2) · √2，\N最终答案就是——(√2/2)π！
+Dialogue: 0,0:02:54.00,0:03:00.29,Default,,0,0,0,,回归三维立体空间，完整回顾极速五步法！
+Dialogue: 0,0:03:00.29,0:03:10.90,Default,,0,0,0,,① 顶面等边三角形算垂距 d = √3；\N② 侧面直角三角形勾股算截面半径 r = √2；
+Dialogue: 0,0:03:10.90,0:03:19.99,Highlight,,0,0,0,,③ 左右各切 45°；④ 圆心角 θ = 90° = π/2；\N⑤ 弧长 l = θ · r = (√2/2)π 一锤定音！
+Dialogue: 0,0:03:19.99,0:03:26.09,Default,,0,0,0,,掌握空间几何降维透视思想，复杂高考难题轻松搞定！

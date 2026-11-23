@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2020 新高考Ⅰ卷第 16 题 · 球面与侧面的交线</title>
+<style>
+  :root{
+    --paper:#F7F6F2;
+    --paper-2:#EDECE5;
+    --ink:#14171A;
+    --ink-2:#565E66;
+    --ink-3:#8B9299;
+    --blue:#2B4C7E;
+    --blue-soft:#6E8CB6;
+    --red:#C6402A;
+    --rule:rgba(20,23,26,.14);
+    --mono:"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --serif:"Songti SC","Source Han Serif SC","Noto Serif SC","STSong",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:flex;height:100vh;height:100dvh}
+
+  /* ---------------- stage ---------------- */
+  .stage{
+    position:relative;
+    flex:1;min-width:0;
+    background:
+      radial-gradient(ellipse at 46% 40%, #FFFEFB 0%, #F5F4EE 52%, #E8E7DF 100%);
+    overflow:hidden;
+  }
+  .stage::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:
+      linear-gradient(to right, rgba(43,76,126,.075) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(43,76,126,.075) 1px, transparent 1px);
+    background-size:26px 26px;
+    mask-image:radial-gradient(ellipse at 50% 45%, #000 30%, transparent 88%);
+  }
+  #c{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  #c.dragging{cursor:grabbing}
+
+  .legend{
+    position:absolute;left:26px;top:24px;
+    display:flex;flex-direction:column;gap:9px;
+    font-family:var(--sans);font-size:11.5px;letter-spacing:.02em;color:var(--ink-2);
+    pointer-events:none;
+  }
+  .legend i{display:inline-block;width:22px;height:0;border-top:1.5px solid var(--blue);vertical-align:middle;margin-right:9px}
+  .legend i.dash{border-top-style:dashed}
+  .legend i.red{border-top-color:var(--red);border-top-width:2.5px}
+
+  .hint{
+    position:absolute;left:26px;bottom:22px;
+    font-family:var(--sans);font-size:11px;color:var(--ink-3);letter-spacing:.02em;
+  }
+
+  #inset{
+    position:absolute;right:22px;top:20px;
+    width:216px;height:250px;
+    background:rgba(251,250,246,.92);
+    border:1px solid rgba(20,23,26,.12);
+    box-shadow:0 10px 30px -22px rgba(20,23,26,.6);
+    opacity:0;transform:translateY(-6px);
+    transition:opacity .45s ease, transform .45s ease;
+    pointer-events:none;
+  }
+  #inset.on{opacity:1;transform:translateY(0)}
+
+  .ctrl{
+    position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+    display:flex;align-items:center;gap:4px;
+    padding:7px 10px;
+    background:rgba(250,249,245,.86);
+    border:1px solid var(--rule);
+    backdrop-filter:blur(8px);
+    border-radius:2px;
+    box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 8px 24px -14px rgba(20,23,26,.35);
+  }
+  .ctrl button{
+    appearance:none;border:0;background:none;cursor:pointer;
+    font-family:var(--sans);font-size:13px;color:var(--ink-2);
+    padding:7px 13px;border-radius:1px;line-height:1;
+    transition:color .15s, background .15s;
+  }
+  .ctrl button:hover{color:var(--ink);background:rgba(43,76,126,.07)}
+  .ctrl button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+  .ctrl .sep{width:1px;height:16px;background:var(--rule);margin:0 6px}
+  .dots{display:flex;gap:0;align-items:center;margin:0 4px}
+  .dots button{
+    width:26px;height:26px;padding:0;position:relative;display:grid;place-items:center;
+  }
+  .dots button::before{
+    content:"";width:6px;height:6px;border-radius:50%;
+    background:transparent;border:1.5px solid var(--ink-3);
+    transition:all .2s ease;
+  }
+  .dots button.done::before{background:var(--blue-soft);border-color:var(--blue-soft)}
+  .dots button.on::before{background:var(--red);border-color:var(--red);transform:scale(1.35)}
+
+  /* ---------------- panel ---------------- */
+  .panel{
+    width:412px;flex:none;
+    display:flex;flex-direction:column;
+    background:#FBFAF6;
+    border-left:1px solid var(--rule);
+    position:relative;
+  }
+  .phead{padding:26px 32px 20px;border-bottom:1px solid var(--rule);flex:none}
+  .eyebrow{
+    font-family:var(--sans);font-size:10.5px;letter-spacing:.14em;color:var(--ink-3);
+    margin-bottom:12px;
+  }
+  .phead h1{
+    font-family:var(--serif);font-size:25px;font-weight:600;letter-spacing:.01em;
+    margin:0 0 14px;line-height:1.25;
+  }
+  .prob{
+    margin:0;font-size:14px;line-height:1.85;color:var(--ink-2);
+    text-align:justify;
+  }
+  .prob b{color:var(--ink);font-weight:600}
+
+  .body{flex:1;overflow-y:auto;padding:22px 32px 8px;scrollbar-width:thin}
+  .body::-webkit-scrollbar{width:8px}
+  .body::-webkit-scrollbar-thumb{background:rgba(20,23,26,.16);border-radius:4px}
+
+  .step{display:none}
+  .step.on{display:block;animation:enter .42s cubic-bezier(.2,.7,.3,1)}
+  @keyframes enter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
+  .stitle{
+    display:flex;align-items:baseline;gap:11px;margin-bottom:14px;
+  }
+  .stitle .idx{
+    font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:.06em;
+    padding-top:2px;
+  }
+  .stitle h2{
+    margin:0;font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.01em;
+  }
+  .step p{margin:0 0 12px;font-size:14.5px;line-height:1.92;color:var(--ink-2);text-align:justify}
+  .step p b{color:var(--ink);font-weight:600}
+  .step p em{font-style:normal;color:var(--red)}
+
+  .eq{
+    margin:14px 0;padding:13px 16px;
+    background:rgba(43,76,126,.045);
+    border-left:2px solid var(--blue);
+    font-family:var(--mono);font-size:13.5px;line-height:2;color:#1D2C40;
+    letter-spacing:.01em;overflow-x:auto;white-space:nowrap;
+  }
+  .eq .c{color:var(--ink-3)}
+  .eq.ans{
+    border-left-color:var(--red);
+    background:rgba(198,64,42,.055);
+    font-size:19px;color:var(--red);
+    padding:18px 16px;letter-spacing:.02em;
+    white-space:normal;
+    display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;
+  }
+  .eq.ans .frac{vertical-align:0;font-size:1em}
+  .eq.ans .cmt{flex-basis:100%;}
+  .eq .cmt{display:block;font-size:11.5px;color:var(--ink-3);letter-spacing:0;margin-top:6px}
+
+  .frac{display:inline-grid;grid-template-rows:auto auto;vertical-align:-.42em;text-align:center;
+        font-size:.92em;line-height:1.18;margin:0 .15em}
+  .frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .28em .06em}
+  .frac>span:last-child{padding:.05em .28em 0}
+
+  .ov{position:relative;padding:0 .08em}
+  .ov::after{content:"";position:absolute;left:0;right:0;top:-.06em;height:.5em;
+             border-top:1px solid currentColor;opacity:.75}
+
+  .note{
+    margin:16px 0 0;padding:11px 14px;
+    border:1px dashed rgba(20,23,26,.2);
+    font-size:13px;line-height:1.8;color:var(--ink-2);
+  }
+  .note b{color:var(--ink)}
+
+  .pfoot{
+    flex:none;padding:12px 32px 16px;border-top:1px solid var(--rule);
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--sans);font-size:11px;color:var(--ink-3);letter-spacing:.04em;
+  }
+  .bar{flex:1;height:1px;background:var(--rule);margin:0 16px;position:relative}
+  .bar::after{
+    content:"";position:absolute;left:0;top:-1px;height:3px;background:var(--red);
+    transition:width .45s cubic-bezier(.2,.7,.3,1);
+  }
+
+  @media (max-width:900px){
+    body{overflow:auto}
+    .app{flex-direction:column;height:auto}
+    .stage{height:56vh;min-height:360px;flex:none}
+    .panel{width:100%;border-left:0;border-top:1px solid var(--rule)}
+    .phead{padding:20px 22px 16px}
+    .body{padding:18px 22px 6px;max-height:none}
+    .pfoot{padding:12px 22px 16px}
+    .legend{left:16px;top:14px;font-size:10px}
+    #inset{width:150px;height:174px;right:8px;top:8px}
+    .hint{display:none}
+    .ctrl{bottom:14px;width:calc(100% - 28px);justify-content:space-between;padding:6px 8px}
+    .ctrl button{padding:7px 8px;font-size:12px;white-space:nowrap}
+    .ctrl .sep{margin:0 2px}
+    .dots button{width:20px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="stage">
+    <canvas id="c"></canvas>
+    <div class="legend">
+      <div><i></i>直四棱柱</div>
+      <div><i class="dash"></i>球面 / 整圆</div>
+      <div><i class="red"></i>侧面内的交线</div>
+    </div>
+    <canvas id="inset" width="216" height="250"></canvas>
+    <div class="hint">拖拽旋转 · 滚轮缩放 · 双击复位</div>
+    <nav class="ctrl" aria-label="步骤">
+      <button id="prev">← 上一步</button>
+      <div class="sep"></div>
+      <div class="dots" id="dots"></div>
+      <div class="sep"></div>
+      <button id="next">下一步 →</button>
+      <button id="play" title="自动播放">▶ 播放</button>
+    </nav>
+  </main>
+
+  <aside class="panel">
+    <header class="phead">
+      <div class="eyebrow">2020 · 新高考Ⅰ卷 · 第 16 题</div>
+      <h1>球面与侧面的交线</h1>
+      <p class="prob">
+        已知直四棱柱 <b>ABCD–A₁B₁C₁D₁</b> 的棱长均为 2，<b style="white-space:nowrap">∠BAD = 60°</b>。
+        以 <b>D₁</b> 为球心、<b>√5</b> 为半径的球面与侧面 <b>BCC₁B₁</b> 的交线长为 ______。
+      </p>
+    </header>
+    <div class="body" id="body"></div>
+    <footer class="pfoot">
+      <span id="pcount">01 / 07</span>
+      <div class="bar" id="bar"></div>
+      <span id="pname">读题</span>
+    </footer>
+  </aside>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   0. 三维场景数学
+   ============================================================ */
+const S3 = Math.sqrt(3);
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const crs=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const nrm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];};
+
+const OC=[1.5, S3/2, 1];                        // 平移使模型居中
+const RAW={
+  A:[0,0,0], B:[2,0,0], C:[3,S3,0], D:[1,S3,0],
+  A1:[0,0,2], B1:[2,0,2], C1:[3,S3,2], D1:[1,S3,2]
+};
+const V={}; for(const k in RAW) V[k]=sub(RAW[k],OC);
+
+const UD=[0.5,S3/2,0];                          // 面上 s 轴方向 (B→C 单位向量)
+const VD=[0,0,1];                               // 面上 t 轴方向 (B→B₁)
+const fp=(s,t)=>add(add(V.B,mul(UD,s)),mul(VD,t));
+const R_SPH=Math.sqrt(5), R_CIR=Math.SQRT2;
+const PC=fp(1,2);                               // 截圆圆心（B₁C₁ 中点）
+const ARC0=5*Math.PI/4, ARC1=7*Math.PI/4;       // 有效弧的参数区间
+const circPt=th=>fp(1+R_CIR*Math.cos(th), 2+R_CIR*Math.sin(th));
+
+// 自检：距离 √3、半径 √2、弧长 √2π/2，端点恰为 BB₁ / CC₁ 中点
+(function selfCheck(){
+  const n=nrm([S3,-1,0]);
+  const d=Math.abs(dot(n,sub(V.D1,V.B)));
+  const r=Math.sqrt(R_SPH*R_SPH-d*d);
+  console.assert(Math.abs(d-S3)<1e-9, 'd 应为 √3');
+  console.assert(Math.abs(r-R_CIR)<1e-9, 'r 应为 √2');
+  console.assert(Math.abs(r*(ARC1-ARC0)-Math.SQRT2*Math.PI/2)<1e-9, '弧长应为 √2π/2');
+  const p0=circPt(ARC0), p1=circPt(ARC1);
+  console.assert(Math.hypot(...sub(p0,[2,0,1]))<1e-9, '起点应为 BB₁ 中点');
+  console.assert(Math.hypot(...sub(p1,[3,S3,1]))<1e-9, '终点应为 CC₁ 中点');
+})();
+
+const FACES=[
+  ['A','B','C','D'], ['A1','B1','C1','D1'],
+  ['A','B','B1','A1'], ['B','C','C1','B1'],
+  ['C','D','D1','C1'], ['D','A','A1','D1']
+];
+const EDGES=[
+  ['A','B'],['B','C'],['C','D'],['D','A'],
+  ['A1','B1'],['B1','C1'],['C1','D1'],['D1','A1'],
+  ['A','A1'],['B','B1'],['C','C1'],['D','D1']
+];
+const NAMES={A:'A',B:'B',C:'C',D:'D',A1:'A₁',B1:'B₁',C1:'C₁',D1:'D₁'};
+
+/* ---------------- 相机 ---------------- */
+const view={az:-0.85, el:0.40, d:9.2};
+const tgt ={az:-0.85, el:0.40, d:9.2};
+let eye=[0,0,9], Fv=[0,0,-1], Rv=[1,0,0], Uv=[0,1,0], focal=1000;
+let W=0,H=0;
+
+function updateCam(){
+  const ce=Math.cos(view.el), se=Math.sin(view.el);
+  eye=[view.d*ce*Math.cos(view.az), view.d*ce*Math.sin(view.az), view.d*se];
+  Fv=nrm(mul(eye,-1));
+  Rv=nrm(crs(Fv,[0,0,1]));
+  Uv=crs(Rv,Fv);
+  focal=Math.min(W,H)*1.22;
+}
+function proj(p){
+  const vx=p[0]-eye[0], vy=p[1]-eye[1], vz=p[2]-eye[2];
+  const x=vx*Rv[0]+vy*Rv[1]+vz*Rv[2];
+  const y=vx*Uv[0]+vy*Uv[1]+vz*Uv[2];
+  const z=vx*Fv[0]+vy*Fv[1]+vz*Fv[2];
+  const k=focal/Math.max(z,0.06);
+  return {x:W/2+x*k, y:H/2-y*k, z:z};
+}
+
+/* ============================================================
+   1. 画布
+   ============================================================ */
+const cv=document.getElementById('c');
+const ctx=cv.getContext('2d');
+const DPR=Math.min(window.devicePixelRatio||1, 2);
+
+function resize(){
+  const r=cv.parentElement.getBoundingClientRect();
+  W=Math.max(200,r.width); H=Math.max(200,r.height);
+  cv.width=W*DPR; cv.height=H*DPR;
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize',resize);
+
+const INS=document.getElementById('inset');
+const ins=INS.getContext('2d');
+INS.width=216*DPR; INS.height=250*DPR;
+ins.setTransform(DPR,0,0,DPR,0,0);
+
+/* ============================================================
+   2. 绘图工具
+   ============================================================ */
+const PAPER='rgba(247,246,242,.92)';
+const BLUE='43,76,126', RED='198,64,42', INK='20,23,26';
+
+function poly(pts, fill, stroke, lw, dash){
+  ctx.beginPath();
+  pts.forEach((p,i)=> i? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+  ctx.closePath();
+  if(fill){ ctx.fillStyle=fill; ctx.fill(); }
+  if(stroke){
+    ctx.setLineDash(dash||[]);
+    ctx.lineWidth=lw||1; ctx.strokeStyle=stroke; ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+function line(a,b,color,lw,dash){
+  ctx.beginPath();
+  ctx.setLineDash(dash||[]);
+  ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+  ctx.lineWidth=lw||1; ctx.strokeStyle=color; ctx.stroke();
+  ctx.setLineDash([]);
+}
+function label(p3,text,color,ox,oy,size,weight){
+  const p=proj(p3);
+  ctx.font=(weight||600)+' '+(size||13)+'px ui-monospace,SFMono-Regular,Menlo,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.lineWidth=4; ctx.strokeStyle=PAPER;
+  ctx.strokeText(text,p.x+(ox||0),p.y+(oy||0));
+  ctx.fillStyle=color; ctx.fillText(text,p.x+(ox||0),p.y+(oy||0));
+}
+function dotAt(p3,color,r){
+  const p=proj(p3);
+  ctx.beginPath(); ctx.arc(p.x,p.y,r||3.4,0,Math.PI*2);
+  ctx.fillStyle=color; ctx.fill();
+  ctx.lineWidth=2.4; ctx.strokeStyle=PAPER; ctx.stroke();
+}
+
+/* ---------------- 球面 ---------------- */
+const sphereLines=(function(){
+  const C=V.D1, R=R_SPH, out=[];
+  // 6 条经线
+  for(let m=0;m<6;m++){
+    const ph=m*Math.PI/6, pts=[];
+    for(let i=0;i<=36;i++){
+      const u=i/36*Math.PI*2;
+      pts.push([C[0]+R*Math.cos(u)*Math.cos(ph), C[1]+R*Math.cos(u)*Math.sin(ph), C[2]+R*Math.sin(u)]);
+    }
+    out.push(pts);
+  }
+  // 4 条纬线
+  for(const deg of [-46,0,46]){
+    const v=deg*Math.PI/180, rr=R*Math.cos(v), zz=C[2]+R*Math.sin(v), pts=[];
+    for(let i=0;i<=36;i++){
+      const u=i/36*Math.PI*2;
+      pts.push([C[0]+rr*Math.cos(u), C[1]+rr*Math.sin(u), zz]);
+    }
+    out.push(pts);
+  }
+  return out;
+})();
+
+function drawSphere(a){
+  ctx.lineWidth=1;
+  ctx.strokeStyle='rgba('+BLUE+','+(0.18*a).toFixed(3)+')';
+  for(const pts of sphereLines){
+    ctx.beginPath();
+    for(let i=0;i<pts.length;i++){
+      const p=proj(pts[i]);
+      i? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y);
+    }
+    ctx.stroke();
+  }
+  // 轮廓
+  const c=proj(V.D1), nrm2=nrm(mul(eye,-1));
+  const rad=R_SPH*focal/Math.max(dot(sub(V.D1,eye),nrm2),0.1);
+  const g=ctx.createRadialGradient(c.x,c.y,rad*0.55,c.x,c.y,rad);
+  g.addColorStop(0,'rgba('+BLUE+',0)');
+  g.addColorStop(1,'rgba('+BLUE+','+(0.055*a).toFixed(3)+')');
+  ctx.beginPath(); ctx.arc(c.x,c.y,rad,0,Math.PI*2);
+  ctx.fillStyle=g; ctx.fill();
+  ctx.strokeStyle='rgba('+BLUE+','+(0.26*a).toFixed(3)+')';
+  ctx.lineWidth=1; ctx.stroke();
+}
+
+/* ---------------- 棱柱 ---------------- */
+function drawPrism(){
+  const arr=FACES.map(f=>{
+    const pts=f.map(k=>proj(V[k]));
+    return {pts, z:pts.reduce((s,p)=>s+p.z,0)/pts.length};
+  }).sort((a,b)=>b.z-a.z);
+  for(const f of arr) poly(f.pts,'rgba('+BLUE+',0.05)',null);
+
+  const ez=EDGES.map(e=>{
+    const a=proj(V[e[0]]), b=proj(V[e[1]]);
+    return {a,b,z:(a.z+b.z)/2};
+  });
+  const zs=ez.map(e=>e.z), zmin=Math.min(...zs), zmax=Math.max(...zs);
+  for(const e of ez){
+    const t=1-((e.z-zmin)/(zmax-zmin||1));      // 1 = 近
+    const al=0.32+0.5*t;
+    line(e.a,e.b,'rgba('+BLUE+','+al.toFixed(3)+')', 1.35, t<0.45?[5,4]:[]);
+  }
+}
+function vertexLabels(){
+  const cp=proj([0,0,0]);
+  for(const k in V){
+    const p=proj(V[k]);
+    let dx=p.x-cp.x, dy=p.y-cp.y;
+    const l=Math.hypot(dx,dy)||1;
+    label(V[k], NAMES[k], 'rgba('+INK+',.82)', dx/l*19, dy/l*19, 13, 600);
+  }
+}
+
+/* ---------------- 平面 / 高亮面 / 法向量 ---------------- */
+function drawPlane(a){
+  const c=[0,1,2].map(i=>(V.B[i]+V.C[i]+V.C1[i]+V.B1[i])/4);
+  const s=1.62;
+  const pts=['B','C','C1','B1'].map(k=>proj(add(c,mul(sub(V[k],c),s))));
+  poly(pts,'rgba('+BLUE+','+(0.05*a).toFixed(3)+')','rgba('+BLUE+','+(0.30*a).toFixed(3)+')',1,[7,6]);
+}
+function drawFace(a){
+  const pts=['B','C','C1','B1'].map(k=>proj(V[k]));
+  poly(pts,'rgba('+BLUE+','+(0.13*a).toFixed(3)+')','rgba('+BLUE+','+(0.75*a).toFixed(3)+')',1.6);
+}
+function drawNormal(a){
+  const c=[0,1,2].map(i=>(V.B[i]+V.C[i]+V.C1[i]+V.B1[i])/4);
+  const n=nrm([S3,-1,0]);
+  const tip=add(c,mul(n,1.45));
+  const A2=proj(c), B2=proj(tip);
+  line(A2,B2,'rgba('+BLUE+','+(0.75*a).toFixed(3)+')',1.4);
+  const ang=Math.atan2(B2.y-A2.y,B2.x-A2.x), h=9;
+  ctx.beginPath();
+  ctx.moveTo(B2.x,B2.y);
+  ctx.lineTo(B2.x-h*Math.cos(ang-0.4), B2.y-h*Math.sin(ang-0.4));
+  ctx.lineTo(B2.x-h*Math.cos(ang+0.4), B2.y-h*Math.sin(ang+0.4));
+  ctx.closePath();
+  ctx.fillStyle='rgba('+BLUE+','+(0.8*a).toFixed(3)+')'; ctx.fill();
+  label(tip,'n','rgba('+BLUE+','+(0.9*a).toFixed(3)+')',14,-6,13,700);
+}
+
+/* ---------------- 截圆 / 弧 ---------------- */
+function drawCircle(a, arcOnly){
+  const pts=[];
+  for(let i=0;i<=140;i++) pts.push(proj(circPt(i/140*Math.PI*2)));
+  ctx.beginPath();
+  pts.forEach((p,i)=> i? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+  ctx.closePath();
+  ctx.strokeStyle='rgba('+RED+','+(0.46*a).toFixed(3)+')';
+  ctx.lineWidth=1.5; ctx.setLineDash([4,5]); ctx.stroke(); ctx.setLineDash([]);
+}
+function drawArc(a, glow){
+  const pts=[];
+  for(let i=0;i<=60;i++) pts.push(proj(circPt(ARC0+(ARC1-ARC0)*i/60)));
+  ctx.beginPath();
+  pts.forEach((p,i)=> i? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+  ctx.save();
+  ctx.shadowColor='rgba('+RED+',0.5)';
+  ctx.shadowBlur=glow?16:6;
+  ctx.strokeStyle='rgba('+RED+','+a.toFixed(3)+')';
+  ctx.lineWidth=3.4; ctx.lineCap='round'; ctx.stroke();
+  ctx.restore();
+  dotAt(circPt(ARC0),'rgba('+RED+','+a.toFixed(3)+')',3.6);
+  dotAt(circPt(ARC1),'rgba('+RED+','+a.toFixed(3)+')',3.6);
+}
+function drawP(a){
+  // D₁ → P 的垂线段
+  line(proj(V.D1),proj(PC),'rgba('+BLUE+','+(0.55*a).toFixed(3)+')',1.3,[5,4]);
+  // P → 弧中点的半径
+  const m=circPt(3*Math.PI/2);
+  line(proj(PC),proj(m),'rgba('+RED+','+(0.55*a).toFixed(3)+')',1.3,[4,4]);
+  dotAt(PC,'#6E4FA8',4);
+  label(PC,'P','rgba(110,79,168,.95)',15,-9,13,700);
+}
+function drawAxes(a){
+  const o=V.A;
+  const dirs=[[[1,0,0],'x'],[[0,1,0],'y'],[[0,0,1],'z']];
+  for(const [d,nm] of dirs){
+    const tip=add(o,mul(d,0.95));
+    const A2=proj(o), B2=proj(tip);
+    line(A2,B2,'rgba('+INK+','+(0.45*a).toFixed(3)+')',1.2);
+    const ang=Math.atan2(B2.y-A2.y,B2.x-A2.x), h=7;
+    ctx.beginPath();
+    ctx.moveTo(B2.x,B2.y);
+    ctx.lineTo(B2.x-h*Math.cos(ang-0.42), B2.y-h*Math.sin(ang-0.42));
+    ctx.lineTo(B2.x-h*Math.cos(ang+0.42), B2.y-h*Math.sin(ang+0.42));
+    ctx.closePath();
+    ctx.fillStyle='rgba('+INK+','+(0.5*a).toFixed(3)+')'; ctx.fill();
+    label(tip,nm,'rgba('+INK+','+(0.6*a).toFixed(3)+')',13,9,12,600);
+  }
+}
+function drawBaseAngle(a){
+  const pts=[];
+  for(let i=0;i<=16;i++){
+    const ph=i/16*Math.PI/3;
+    pts.push(proj([V.A[0]+0.55*Math.cos(ph), V.A[1]+0.55*Math.sin(ph), V.A[2]]));
+  }
+  ctx.beginPath();
+  pts.forEach((p,i)=> i? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+  ctx.strokeStyle='rgba('+RED+','+(0.8*a).toFixed(3)+')';
+  ctx.lineWidth=1.3; ctx.stroke();
+  label([V.A[0]+1.02*Math.cos(Math.PI/6), V.A[1]+1.02*Math.sin(Math.PI/6), V.A[2]],
+        '60°','rgba('+RED+','+(0.9*a).toFixed(3)+')', -6,-14, 12, 600);
+}
+
+/* ============================================================
+   3. 状态机
+   ============================================================ */
+const STEPS=[
+  { name:'题面', cam:[-0.85,0.40,9.2], f:{} },
+  { name:'建系', cam:[-1.18,0.62,9.4], f:{base:1,angle:1} },
+  { name:'作平面', cam:[-0.52,0.12,8.6], f:{plane:1,normal:1,face:1} },
+  { name:'放球', cam:[-0.92,0.34,10.6], f:{plane:0.45,face:0.55,sphere:1} },
+  { name:'截圆', cam:[-0.52,0.13,8.9], f:{plane:0.40,face:0.9,sphere:0.5,circle:1,pt:1} },
+  { name:'裁剪', cam:[-0.52,0.09,8.3], f:{plane:0.28,face:1,sphere:0.34,circle:1,pt:1,arc:1} },
+  { name:'弧长', cam:[-0.22,0.30,9.2], f:{plane:0.22,face:1,sphere:0.26,circle:0.8,pt:1,arc:1,pulse:1} }
+];
+
+const KEYS=['plane','normal','face','sphere','circle','arc','pt','angle','base'];
+const cur={}, to={};
+KEYS.forEach(k=>{cur[k]=0;to[k]=0;});
+
+let step=0, playing=false, timer=null;
+
+function applyStep(i,instant){
+  step=i;
+  const s=STEPS[i];
+  KEYS.forEach(k=> to[k]=s.f[k]||0);
+  if(instant) KEYS.forEach(k=> cur[k]=to[k]);
+  setCam(s.cam[0],s.cam[1],s.cam[2]);
+  renderStep();
+  document.getElementById('inset').classList.toggle('on', i>=5);
+  document.querySelectorAll('.dots button').forEach((b,j)=>{
+    b.classList.toggle('on', j===i);
+    b.classList.toggle('done', j<i);
+  });
+  document.getElementById('pcount').textContent=String(i+1).padStart(2,'0')+' / 07';
+  document.getElementById('pname').textContent=s.name;
+  document.getElementById('bar').style.width=((i+1)/7*100)+'%';
+}
+function setCam(az,el,d){
+  let target=az;
+  while(target-view.az> Math.PI) target-=Math.PI*2;
+  while(target-view.az<-Math.PI) target+=Math.PI*2;
+  tgt.az=target; tgt.el=el; tgt.d=d;
+}
+
+/* ============================================================
+   4. 主循环
+   ============================================================ */
+let t0=performance.now();
+function frame(now){
+  const dt=Math.min((now-t0)/1000,0.05); t0=now;
+  const k=1-Math.pow(0.001,dt*1.4);
+  view.az+=(tgt.az-view.az)*k;
+  view.el+=(tgt.el-view.el)*k;
+  view.d +=(tgt.d -view.d )*k;
+  for(const key of KEYS) cur[key]+=((to[key]||0)-cur[key])*Math.min(1,dt*7);
+
+  updateCam();
+  ctx.clearRect(0,0,W,H);
+
+  if(cur.sphere>0.01) drawSphere(cur.sphere);
+  drawPrism();
+  if(cur.plane >0.01) drawPlane(cur.plane);
+  if(cur.face  >0.01) drawFace(cur.face);
+  if(cur.normal>0.01) drawNormal(cur.normal);
+  if(cur.base  >0.01) drawAxes(cur.base);
+  if(cur.angle >0.01) drawBaseAngle(cur.angle);
+  if(cur.circle>0.01) drawCircle(cur.circle);
+  if(cur.pt    >0.01) drawP(cur.pt);
+  if(cur.arc   >0.01) drawArc(cur.arc, !!STEPS[step].f.pulse && step===6);
+  vertexLabels();
+
+  drawInset();
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   5. 侧面展开图（右侧插图）
+   ============================================================ */
+const IW=216, IH=250;
+function drawInset(){
+  const alpha=Math.max(0,(cur.arc-0.02)/0.98);
+  ins.clearRect(0,0,IW,IH);
+  if(alpha<=0.01) return;
+
+  // 视窗：s∈[-0.6,2.6]，t∈[-0.35,3.55]
+  const sv={x0:-0.60,x1:2.60,y0:-0.35,y1:3.55};
+  const pad=15;
+  const sc=Math.min((IW-pad*2)/(sv.x1-sv.x0),(IH-pad*2)/(sv.y1-sv.y0));
+  const cx=IW/2-((sv.x0+sv.x1)/2)*sc;
+  const cy=IH/2+((sv.y0+sv.y1)/2)*sc;
+  const P=(s,t)=>[cx+s*sc, cy-t*sc];
+
+  ins.globalAlpha=alpha;
+
+  // 正方形面
+  const sq=[P(0,0),P(2,0),P(2,2),P(0,2)];
+  ins.beginPath();
+  sq.forEach((p,i)=> i? ins.lineTo(p[0],p[1]) : ins.moveTo(p[0],p[1]));
+  ins.closePath();
+  ins.fillStyle='rgba('+BLUE+',.055)'; ins.fill();
+  ins.lineWidth=1.4; ins.strokeStyle='rgba('+BLUE+',.8)'; ins.stroke();
+
+  // 整圆（虚线）
+  ins.beginPath();
+  ins.arc(P(1,2)[0], P(1,2)[1], R_CIR*sc, 0, Math.PI*2);
+  ins.setLineDash([3,4]); ins.lineWidth=1;
+  ins.strokeStyle='rgba('+RED+',.42)'; ins.stroke();
+  ins.setLineDash([]);
+
+  // 有效弧
+  ins.beginPath();
+  for(let i=0;i<=48;i++){
+    const th=ARC0+(ARC1-ARC0)*i/48;
+    const p=P(1+R_CIR*Math.cos(th), 2+R_CIR*Math.sin(th));
+    i? ins.lineTo(p[0],p[1]) : ins.moveTo(p[0],p[1]);
+  }
+  ins.lineWidth=2.8; ins.lineCap='round';
+  ins.strokeStyle='rgba('+RED+',1)'; ins.stroke();
+
+  // 圆心、半径、角度
+  const cpt=P(1,2);
+  ins.beginPath(); ins.arc(cpt[0],cpt[1],3,0,Math.PI*2);
+  ins.fillStyle='#6E4FA8'; ins.fill();
+  ins.beginPath();
+  ins.moveTo(cpt[0],cpt[1]);
+  ins.lineTo(P(1,2-R_CIR)[0], P(1,2-R_CIR)[1]);
+  ins.setLineDash([3,3]); ins.lineWidth=1;
+  ins.strokeStyle='rgba('+RED+',.6)'; ins.stroke(); ins.setLineDash([]);
+
+  ins.beginPath();
+  ins.arc(cpt[0],cpt[1],sc*0.42, Math.PI/2, Math.PI);
+  ins.strokeStyle='rgba('+RED+',.75)'; ins.lineWidth=1.2; ins.stroke();
+
+  // 文字
+  ins.font='600 11px ui-monospace,SFMono-Regular,Menlo,monospace';
+  ins.fillStyle='#565E66'; ins.textAlign='center'; ins.textBaseline='middle';
+  ins.fillText('B', sq[0][0]-12, sq[0][1]+4);
+  ins.fillText('C', sq[1][0]+12, sq[1][1]+4);
+  ins.fillText('C₁', sq[2][0]+13, sq[2][1]-6);
+  ins.fillText('B₁', sq[3][0]-13, sq[3][1]-6);
+  ins.fillStyle='rgba('+RED+',.9)';
+  ins.font='600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
+  ins.fillText('π/2', cpt[0]+sc*0.62, cpt[1]+sc*0.40);
+  ins.fillStyle='rgba('+INK+',.5)';
+  ins.font='9.5px -apple-system,"PingFang SC",sans-serif';
+  ins.fillText('侧面展开', IW/2, 12);
+  ins.globalAlpha=1;
+}
+
+/* ============================================================
+   6. 交互
+   ============================================================ */
+let drag=null;
+cv.addEventListener('pointerdown',e=>{
+  drag={x:e.clientX,y:e.clientY};
+  cv.classList.add('dragging');
+  cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+  drag.x=e.clientX; drag.y=e.clientY;
+  tgt.az-=dx*0.008;
+  tgt.el=Math.max(-1.15,Math.min(1.25, tgt.el+dy*0.006));
+  view.az=tgt.az; view.el=tgt.el;
+});
+cv.addEventListener('pointerup',e=>{
+  drag=null; cv.classList.remove('dragging');
+  try{cv.releasePointerCapture(e.pointerId);}catch(_){}
+});
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  tgt.d=Math.max(5.2,Math.min(18,tgt.d*(1+Math.sign(e.deltaY)*0.09)));
+},{passive:false});
+cv.addEventListener('dblclick',()=>setCam(STEPS[step].cam[0],STEPS[step].cam[1],STEPS[step].cam[2]));
+
+document.getElementById('prev').onclick=()=>{stop();applyStep(Math.max(0,step-1));};
+document.getElementById('next').onclick=()=>{stop();applyStep(Math.min(STEPS.length-1,step+1));};
+
+const dots=document.getElementById('dots');
+STEPS.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.title=s.name;
+  b.setAttribute('aria-label','第 '+(i+1)+' 步：'+s.name);
+  b.onclick=()=>{stop();applyStep(i);};
+  dots.appendChild(b);
+});
+
+const playBtn=document.getElementById('play');
+function stop(){
+  if(timer){clearInterval(timer);timer=null;}
+  playing=false; playBtn.textContent='▶ 播放';
+}
+playBtn.onclick=()=>{
+  if(playing){stop();return;}
+  playing=true; playBtn.textContent='❚❚ 暂停';
+  if(step===STEPS.length-1) applyStep(0);
+  timer=setInterval(()=>{
+    if(step>=STEPS.length-1){stop();return;}
+    applyStep(step+1);
+  },5200);
+};
+
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='ArrowRight'){stop();applyStep(Math.min(STEPS.length-1,step+1));}
+  if(e.key==='ArrowLeft'){stop();applyStep(Math.max(0,step-1));}
+});
+
+/* ============================================================
+   7. 步骤文案
+   ============================================================ */
+const TEXT=[
+/* 0 */`
+<div class="stitle"><span class="idx">STEP 01</span><h2>先弄清楚「交线」是什么</h2></div>
+<p>直四棱柱：侧棱垂直于底面，<b>12 条棱长都是 2</b>；底面是菱形，<b style="white-space:nowrap">∠BAD = 60°</b>。</p>
+<p>球心 <b>D₁</b> 是顶点，半径 <b>√5 ≈ 2.236</b>。它比棱长 2 略大，所以球面会切穿棱柱，与侧面 <b>BCC₁B₁</b> 交出一条曲线。</p>
+<div class="note"><b>思路：</b>球面被平面截得的是<b>圆</b>——先求球心到侧面的距离，得到截圆的半径；再看这个圆有多少落在侧面这个 2×2 的正方形里。<b>求交线 = 求圆的一段弧。</b></div>
+`,
+/* 1 */`
+<div class="stitle"><span class="idx">STEP 02</span><h2>建系：菱形底面 + 柱高</h2></div>
+<p>以 <b>A</b> 为原点，<b>AB</b> 为 x 轴建立空间直角坐标系。菱形边长 2、∠BAD = 60°，于是</p>
+<div class="eq">D = (2cos60°, 2sin60°, 0) = (1, √3, 0)</div>
+<p>平行四边形法则给出 <b>C = B + AD</b>，四个顶点与柱高 2：</p>
+<div class="eq">A(0,0,0)&nbsp; B(2,0,0)&nbsp; C(3,√3,0)&nbsp; D(1,√3,0)<br>D₁(1,√3,2)</div>
+<p>球心只有一个坐标需要记：<em>D₁(1, √3, 2)</em>。</p>
+`,
+/* 2 */`
+<div class="stitle"><span class="idx">STEP 03</span><h2>侧面在哪个平面上</h2></div>
+<p>侧面 BCC₁B₁ 由两个方向张成：</p>
+<div class="eq"><span class="ov">BC</span> = (1, √3, 0)，<span class="ov">BB₁</span> = (0, 0, 1)</div>
+<p>法向量取叉积，注意它其实是<b>底面上一条线的方向</b>：</p>
+<div class="eq">n = <span class="ov">BC</span> × <span class="ov">BB₁</span> = (√3, −1, 0)，|n| = 2</div>
+<p>过点 B(2, 0, 0)，得到平面方程（右侧已画出示意平面）：</p>
+<div class="eq">√3·x − y − 2√3 = 0</div>
+`,
+/* 3 */`
+<div class="stitle"><span class="idx">STEP 04</span><h2>球心到侧面的距离</h2></div>
+<p>把 D₁(1, √3, 2) 代入点到平面的距离公式：</p>
+<div class="eq">d = |√3·1 − √3 − 2√3| / |n|<br>&nbsp;&nbsp;= 2√3 / 2 = <b>√3</b></div>
+<p>这里 z 坐标根本没参与运算——因为侧面是<b>竖直</b>的，D₁ 再往上抬也不影响它与侧面的水平距离。</p>
+<p>于是只要比较 <em>√3 ≈ 1.732</em> 与 <em>R = √5 ≈ 2.236</em>：</p>
+<div class="eq">d &lt; R&nbsp;&nbsp;<span class="c">⇒ 球面与平面相交于一个圆</span></div>
+`,
+/* 4 */`
+<div class="stitle"><span class="idx">STEP 05</span><h2>截圆的半径与圆心</h2></div>
+<p>半径由直角三角形给出：</p>
+<div class="eq">r = √(R² − d²) = √(5 − 3) = <b>√2</b></div>
+<p>圆心 P 是 D₁ 在平面上的垂足，沿法向量走 d：</p>
+<div class="eq">P = D₁ + (√3/2)·(√3, −1, 0)<br>&nbsp;&nbsp;= (5/2, √3/2, 2)</div>
+<p>把 P 换算到侧面自己的坐标（s 沿 <span class="ov">BC</span>，t 沿 <span class="ov">BB₁</span>，以 B 为原点）：</p>
+<div class="eq">(s − 1)² + (t − 2)² = 2&nbsp;&nbsp;<span class="c">圆心 (1, 2)</span></div>
+<p>而 (1, 2) 正是 <em>B₁C₁ 的中点</em>——截圆圆心落在正方形的<b>上边中点</b>上。</p>
+`,
+/* 5 */`
+<div class="stitle"><span class="idx">STEP 06</span><h2>用「面」去裁这个圆</h2></div>
+<p>侧面只是 s∈[0,2]、t∈[0,2] 的正方形，圆却有一大半在外面。<b>交线 = 圆 ∩ 正方形</b>。</p>
+<p>令 s = 1 + √2·cosθ，t = 2 + √2·sinθ，两个约束同时生效：</p>
+<div class="eq">0 ≤ t ≤ 2 ⇒ sinθ ≤ 0<br>0 ≤ s ≤ 2 ⇒ |cosθ| ≤ √2/2</div>
+<div class="eq">⇒ θ ∈ [5π/4, 7π/4]<br>&nbsp;&nbsp;Δθ = π/2 <span class="c">（只剩四分之一圆）</span></div>
+<p>代回两个端点：θ = 5π/4 处 (s,t) = (0,1)，θ = 7π/4 处 (s,t) = (2,1)。</p>
+<p>也就是 <b>BB₁ 的中点</b>到 <b>CC₁ 的中点</b>，中间最低点离 B₁C₁ 还有 √2 的距离。右侧小图是侧面的展开图。</p>
+`,
+/* 6 */`
+<div class="stitle"><span class="idx">STEP 07</span><h2>弧长 = 半径 × 圆心角</h2></div>
+<p>半径 r = √2，有效圆心角 Δθ = π/2（弧度制）：</p>
+<div class="eq">l = r · Δθ = √2 × π/2</div>
+<div class="eq ans"><span class="frac"><span>√2π</span><span>2</span></span><span style="font-size:14px;letter-spacing:.04em">≈ 2.221</span><span class="cmt">棱长 2 的正方形里，一段半径 √2 的 90° 弧</span></div>
+<p>回到原题：<b>交线长为 <em>√2π/2</em>。</b></p>
+<div class="note"><b>易错点：</b>直接用 2π√2 会漏掉「圆被正方形裁掉」，得到整圆周长；只算 2×√2 则是在算弦长而不是弧长。</div>
+`
+];
+
+const body=document.getElementById('body');
+body.innerHTML=TEXT.map((html,i)=>`<section class="step" data-i="${i}">${html}</section>`).join('');
+function renderStep(){
+  body.querySelectorAll('.step').forEach((el,i)=>el.classList.toggle('on', i===step));
+  body.scrollTop=0;
+}
+
+/* ============================================================
+   8. 启动
+   ============================================================ */
+resize();
+applyStep(0,true);
+requestAnimationFrame(t=>{t0=t;frame(t);});
+window.addEventListener('resize',()=>{ if(step>=5) drawInset(); });
+})();
+</script>
+</body>
+</html>
